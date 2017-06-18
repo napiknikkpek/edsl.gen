@@ -7,7 +7,7 @@
 
 namespace edsl::gen {
 template <typename X, typename Y>
-auto operator|(X x, Y y) {
+auto operator|(wrapper<X> x, wrapper<Y> y) {
   return op([x, y](auto sink, auto&&... args) {
     return invoke(x, sink, std::forward<decltype(args)>(args)...) ||
            invoke(y, sink, std::forward<decltype(args)>(args)...);
