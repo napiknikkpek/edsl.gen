@@ -3,14 +3,14 @@
 
 #include <utility>
 
-#include "edsl/gen/core.hpp"
+#include "edsl/gen/operand.hpp"
 
 namespace edsl::gen {
 
 template <typename X>
 auto operator!(X x) {
-  return op([x](auto&&... args) {
-    return !invoke(x, std::forward<decltype(args)>(args)...);
+  return op([x](auto sink, auto&&... args) {
+    return !invoke(x, sink, std::forward<decltype(args)>(args)...);
   });
 }
 }

@@ -3,15 +3,15 @@
 
 #include <boost/hana.hpp>
 
-#include "edsl/gen/core.hpp"
+#include "edsl/gen/operand.hpp"
 
 namespace edsl::gen {
 
 template <typename X, typename Y>
 auto operator+(X x, Y y) {
-  return op([x, y](auto&&... args) {
-    return invoke(x, std::forward<decltype(args)>(args)...) &&
-           invoke(y, std::forward<decltype(args)>(args)...);
+  return op([x, y](auto sink, auto&&... args) {
+    return invoke(x, sink, std::forward<decltype(args)>(args)...) &&
+           invoke(y, sink, std::forward<decltype(args)>(args)...);
   });
 }
 }
