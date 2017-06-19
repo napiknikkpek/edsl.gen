@@ -7,10 +7,10 @@
 
 namespace edsl::gen {
 
-template <typename X, int S>
-auto operator!(operand<X, S> x) {
-  return op(boost::hana::int_<S>{}, [x](auto sink, auto&&... args) {
-    return !invoke(x, sink, std::forward<decltype(args)>(args)...);
+template <typename T, typename Size>
+auto operator!(operand<T, Size> subject) {
+  return op(Size{}, [subject](auto sink, auto&&... args) {
+    return !invoke(subject, sink, std::forward<decltype(args)>(args)...);
   });
 }
 }

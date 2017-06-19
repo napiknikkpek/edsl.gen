@@ -4,11 +4,11 @@
 #include "edsl/gen/operand.hpp"
 
 namespace edsl::gen {
-template <typename X, typename Y, int S>
-auto operator|(operand<X, S> x, operand<Y, S> y) {
-  return op(boost::hana::int_<S>{}, [x, y](auto sink, auto&&... args) {
-    return invoke(x, sink, std::forward<decltype(args)>(args)...) ||
-           invoke(y, sink, std::forward<decltype(args)>(args)...);
+template <typename Lhs, typename Rhs, typename Size>
+auto operator|(operand<Lhs, Size> lhs, operand<Rhs, Size> rhs) {
+  return op(Size{}, [lhs, rhs](auto sink, auto&&... args) {
+    return invoke(lhs, sink, std::forward<decltype(args)>(args)...) ||
+           invoke(rhs, sink, std::forward<decltype(args)>(args)...);
   });
 }
 }

@@ -6,30 +6,69 @@
 
 #include <boost/hana.hpp>
 
+#include "meta/arguments.hpp"
+#include "meta/result.hpp"
 #include "meta/type_traits.hpp"
 
 namespace edsl::gen {
 
 template <typename T>
-auto arguments_size(T);
+auto arguments_size();
 
-template <typename T,
-          int S = decltype(arguments_size(std::declval<T&&>()))::value>
+template <typename Functor>
+auto op(Functor&&);
+
+template <typename Size, typename Functor>
+auto op(Size, Functor&&);
+
+// template <typename T>
+// auto result_type_size() {
+//   using namespace boost::hana::literals;
+
+//   using result = typename decltype(meta::result<T>())::type;
+
+//   if
+//     constexpr(boost::hana::Foldable<result>::value) {
+//       return decltype(boost::hana::size(std::declval<result&&>())){};
+//     }
+//   else {
+//     return 1_c;
+//   }
+// }
+
+template <typename T, typename S = decltype(arguments_size<T>())>
 struct operand : public T {
- public:
-  static constexpr int size = S;
+  static constexpr int size = S::value;
 
-  operand(T t) : T{t} {}
+  template <typename Converter>
+  auto operator[](Converter conv) {
+    using namespace boost::hana;
+
+    auto s = boost::hana::size(meta::arguments<Converter>());
+    auto subject = *this;
+    return op(s, [subject, conv](auto sink, auto&&... args) {
+      auto seq = conv(std::forward<decltype(args)>(args)...);
+      if
+        constexpr(Foldable<decltype(seq)>::value) {
+          return unpack(seq, [subject, sink](auto... xs) {
+            return subject(sink, xs...);
+          });
+        }
+      else {
+        return subject(sink, seq);
+      }
+    });
+  }
 };
 
-template <typename T>
-auto op(T&& t) {
-  return operand<std::decay_t<T>>{std::forward<T>(t)};
+template <typename Functor>
+auto op(Functor&& f) {
+  return operand<std::decay_t<Functor>>{std::forward<Functor>(f)};
 }
 
-template <int S, typename T>
-auto op(boost::hana::int_<S>, T&& t) {
-  return operand<std::decay_t<T>, S>{std::forward<T>(t)};
+template <typename Size, typename Functor>
+auto op(Size, Functor&& f) {
+  return operand<std::decay_t<Functor>, Size>{std::forward<Functor>(f)};
 }
 
 template <typename T>
@@ -37,7 +76,7 @@ struct is_operand {
   static constexpr bool value = false;
 };
 
-template <typename T, int S>
+template <typename T, typename S>
 struct is_operand<operand<T, S>> {
   static constexpr bool value = true;
 };
@@ -46,11 +85,11 @@ template <typename T>
 constexpr bool is_operand_v = is_operand<T>::value;
 
 template <typename T>
-auto arguments_size(T) {
+auto arguments_size() {
   if
     constexpr(is_operand_v<T>) { return boost::hana::int_<T::size>{}; }
   else {
-    return boost::hana::size(meta::call_arguments(std::declval<T&&>()));
+    return boost::hana::size(meta::arguments<T>());
   }
 }
 

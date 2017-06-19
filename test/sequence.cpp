@@ -14,20 +14,6 @@ void check(R expected, G g, Args&&... args) {
   BOOST_TEST(result == expected);
 }
 
-BOOST_AUTO_TEST_CASE(temp) {
-  using edsl::gen::operand;
-
-  auto x = [](int, int) {};
-  auto y = [](int) {};
-  auto z = [](int) {};
-
-  auto g = op(x) << op(y) << op(z);
-
-  static_assert(decltype(g)::size == 2);
-  int r = 0;
-  g(r, 3);
-}
-
 BOOST_AUTO_TEST_CASE(empty) {
   check(3, op([](int& r) { r += 1; }) << op([](int& r) { r += 2; }));
   check(3, op([](int& r) { r += 1; }) << op([](int& r, int i) { r += i; }), 2);
