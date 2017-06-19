@@ -10,17 +10,48 @@
 
 namespace edsl::gen {
 
-struct fail {};
-
 template <typename T>
-class operand : public T {
+auto arguments_size(T);
+
+template <typename T,
+          int S = decltype(arguments_size(std::declval<T&&>()))::value>
+struct operand : public T {
  public:
-  operand(T&& t) : T{std::forward<T>(t)} {}
+  static constexpr int size = S;
+
+  operand(T t) : T{t} {}
 };
 
 template <typename T>
 auto op(T&& t) {
-  return operand<T>{std::forward<T>(t)};
+  return operand<std::decay_t<T>>{std::forward<T>(t)};
+}
+
+template <int S, typename T>
+auto op(boost::hana::int_<S>, T&& t) {
+  return operand<std::decay_t<T>, S>{std::forward<T>(t)};
+}
+
+template <typename T>
+struct is_operand {
+  static constexpr bool value = false;
+};
+
+template <typename T, int S>
+struct is_operand<operand<T, S>> {
+  static constexpr bool value = true;
+};
+
+template <typename T>
+constexpr bool is_operand_v = is_operand<T>::value;
+
+template <typename T>
+auto arguments_size(T) {
+  if
+    constexpr(is_operand_v<T>) { return boost::hana::int_<T::size>{}; }
+  else {
+    return boost::hana::size(meta::call_arguments(std::declval<T&&>()));
+  }
 }
 
 template <typename F, typename Sink, typename... Args>

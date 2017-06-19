@@ -1,6 +1,7 @@
 #define BOOST_TEST_MODULE sequence
 #include <boost/test/included/unit_test.hpp>
 
+#include "edsl/gen/operand.hpp"
 #include "edsl/gen/operator/sequence.hpp"
 
 using edsl::gen::op;
@@ -11,6 +12,20 @@ void check(R expected, G g, Args&&... args) {
 
   BOOST_TEST(g(std::ref(result), std::forward<Args>(args)...));
   BOOST_TEST(result == expected);
+}
+
+BOOST_AUTO_TEST_CASE(temp) {
+  using edsl::gen::operand;
+
+  auto x = [](int, int) {};
+  auto y = [](int) {};
+  auto z = [](int) {};
+
+  auto g = op(x) << op(y) << op(z);
+
+  static_assert(decltype(g)::size == 2);
+  int r = 0;
+  g(r, 3);
 }
 
 BOOST_AUTO_TEST_CASE(empty) {
@@ -26,12 +41,10 @@ BOOST_AUTO_TEST_CASE(multi) {
         1, 2, 3);
 }
 
-// BOOST_AUTO_TEST_CASE(variadic) {
-//   check(6,
-//         wrap([](int& r, double i, unsigned j) {
-//           r += i;
-//           r += j;
-//         }) <<
-//             [](int& r, int i) { r += i; },
-//         1, 2, 3);
-// }
+BOOST_AUTO_TEST_CASE(variadic) {
+  check(6, op([](int& r, double i, unsigned j) {
+             r += i;
+             r += j;
+           }) << op([](int& r, int i) { r += i; }),
+        1, 2, 3);
+}
