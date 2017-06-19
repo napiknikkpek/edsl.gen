@@ -13,17 +13,16 @@ namespace edsl::gen {
 template <typename... Xs>
 struct sequence_impl {
   template <typename X, typename Y, typename Sink, typename... Ys>
-  static constexpr auto apply(X x, Y y, Sink sink, typename Xs::type&&... xs,
-                              Ys&&... ys) {
-    return invoke(x, sink, std::forward<typename Xs::type>(xs)...) &&
-           invoke(y, sink, std::forward<Ys>(ys)...);
+  static constexpr auto apply(X x, Y y, Sink sink,
+                              typename Xs::type const&... xs, Ys const&... ys) {
+    return invoke(x, sink, xs...) && invoke(y, sink, ys...);
   }
 };
 
 template <typename X, typename SizeX, typename Y, typename SizeY>
 auto operator<<(operand<X, SizeX> x, operand<Y, SizeY> y) {
   return op(boost::hana::int_<SizeX::value + SizeY::value - 1>{},
-            [x, y](auto sink, auto&&... args) {
+            [x, y](auto sink, auto const&... args) {
               using namespace boost::hana;
               using namespace boost::hana::literals;
 
@@ -31,8 +30,8 @@ auto operator<<(operand<X, SizeX> x, operand<Y, SizeY> y) {
                                 make_range(0_c, int_<SizeX::value - 1>{}));
 
               return unpack(seq1, [x, y, sink, &args...](auto... xs) {
-                return sequence_impl<decltype(xs)...>::apply(
-                    x, y, sink, std::forward<decltype(args)>(args)...);
+                return sequence_impl<decltype(xs)...>::apply(x, y, sink,
+                                                             args...);
               });
             });
 }

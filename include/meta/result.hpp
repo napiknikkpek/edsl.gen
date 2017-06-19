@@ -10,7 +10,7 @@ namespace meta {
 
 template <typename T>
 struct result_impl {
-  static_assert(!std::is_same<T, T>::value, "T is not a functor");
+  static_assert(!std::is_same<T, T>::value, "'T' is not a functor");
 };
 
 template <typename R, typename... Args>

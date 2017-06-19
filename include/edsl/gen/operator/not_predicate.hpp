@@ -9,8 +9,8 @@ namespace edsl::gen {
 
 template <typename T, typename Size>
 auto operator!(operand<T, Size> subject) {
-  return op(Size{}, [subject](auto sink, auto&&... args) {
-    return !invoke(subject, sink, std::forward<decltype(args)>(args)...);
+  return op(Size{}, [subject](auto sink, auto const&... args) {
+    return !invoke(subject, sink, args...);
   });
 }
 }

@@ -4,11 +4,10 @@
 #include "edsl/gen/operand.hpp"
 
 namespace edsl::gen {
-template <typename Lhs, typename Rhs, typename Size>
-auto operator|(operand<Lhs, Size> lhs, operand<Rhs, Size> rhs) {
-  return op(Size{}, [lhs, rhs](auto sink, auto&&... args) {
-    return invoke(lhs, sink, std::forward<decltype(args)>(args)...) ||
-           invoke(rhs, sink, std::forward<decltype(args)>(args)...);
+template <typename Left, typename Right, typename Size>
+auto operator|(operand<Left, Size> left, operand<Right, Size> right) {
+  return op(Size{}, [left, right](auto sink, auto const&... args) {
+    return invoke(left, sink, args...) || invoke(right, sink, args...);
   });
 }
 }

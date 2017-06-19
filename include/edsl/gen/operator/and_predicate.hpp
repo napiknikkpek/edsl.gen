@@ -10,8 +10,8 @@ namespace edsl::gen {
 template <typename T, typename Size>
 auto operator&(operand<T, Size> subject) {
   return op(boost::hana::int_<Size::value + 1>{},
-            [subject](auto /*sink*/, auto&&... args) {
-              return invoke(subject, std::forward<decltype(args)>(args)...);
+            [subject](auto /*sink*/, auto const&... args) {
+              return invoke(subject, args...);
             });
 }
 }
