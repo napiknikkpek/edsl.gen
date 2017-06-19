@@ -3,14 +3,17 @@
 
 #include <utility>
 
-#include "edsl/gen/operand.hpp"
+#include "edsl/gen/as_operand.hpp"
 
 namespace edsl::gen {
 
-template <typename T, typename Size>
-auto operator!(operand<T, Size> subject) {
-  return op(Size{}, [subject](auto sink, auto const&... args) {
-    return !invoke(subject, sink, args...);
+template <typename Subject,
+          typename = decltype(as_operand(std::declval<Subject&&>()))>
+auto operator!(Subject subject) {
+  auto op = as_operand(subject);
+  auto size = arguments_size<decltype(op)>();
+  return make_operand(size, [op](auto sink, auto const&... args) {
+    return !invoke(op, sink, args...);
   });
 }
 }

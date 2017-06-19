@@ -1,22 +1,25 @@
 #include <complex>
 #include <iostream>
 
-#include "edsl/gen/operand.hpp"
+#include "edsl/gen/as_operand.hpp"
+
+namespace edsl::gen {
+auto as_operand(char ch) {
+  return as_operand([=](std::ostream& out) { out << ch; });
+}
+}
+
 #include "edsl/gen/operator/alternative.hpp"
 #include "edsl/gen/operator/and_predicate.hpp"
 #include "edsl/gen/operator/sequence.hpp"
 
 #include <boost/hana.hpp>
 
-using edsl::gen::as_operand;
+namespace gen = edsl::gen;
 
-auto double_ = [](std::ostream& out, double v) { out << v; };
+auto double_ = gen::as_operand([](std::ostream& out, double v) { out << v; });
 
-auto true_ = as_operand([](bool v) { return v == true; });
-
-auto as_operand(char ch) {
-  return as_operand([=](std::ostream& out) { out << ch; });
-}
+auto true_ = gen::as_operand([](bool v) { return v == true; });
 
 int main() {
   auto check_real_imag = [](std::complex<double> const& c) {

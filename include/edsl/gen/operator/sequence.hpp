@@ -10,30 +10,37 @@
 
 namespace edsl::gen {
 
-template <typename... Xs>
+template <typename... Args1>
 struct sequence_impl {
-  template <typename X, typename Y, typename Sink, typename... Ys>
-  static constexpr auto apply(X x, Y y, Sink sink,
-                              typename Xs::type const&... xs, Ys const&... ys) {
-    return invoke(x, sink, xs...) && invoke(y, sink, ys...);
+  template <typename Op1, typename Op2, typename Sink, typename... Args2>
+  static constexpr auto apply(Op1 op1, Op2 op2, Sink sink,
+                              typename Args1::type const&... args1,
+                              Args2 const&... args2) {
+    return invoke(op1, sink, args1...) && invoke(op2, sink, args2...);
   }
 };
 
-template <typename X, typename SizeX, typename Y, typename SizeY>
-auto operator<<(operand<X, SizeX> x, operand<Y, SizeY> y) {
-  return op(boost::hana::int_<SizeX::value + SizeY::value - 1>{},
-            [x, y](auto sink, auto const&... args) {
-              using namespace boost::hana;
-              using namespace boost::hana::literals;
+template <typename Left, typename Right,
+          typename = decltype(as_operand(std::declval<Left&&>())),
+          typename = decltype(as_operand(std::declval<Right&&>()))>
+auto operator<<(Left left, Right right) {
+  auto op1 = as_operand(left);
+  auto op2 = as_operand(right);
+  using Size1 = decltype(arguments_size<decltype(op1)>());
+  using Size2 = decltype(arguments_size<decltype(op2)>());
+  return make_operand(
+      boost::hana::int_<Size1::value + Size2::value - 1>{},
+      [op1, op2](auto sink, auto const&... args) {
+        using namespace boost::hana;
+        using namespace boost::hana::literals;
 
-              auto seq1 = slice(make_tuple(type<decltype(args)>{}...),
-                                make_range(0_c, int_<SizeX::value - 1>{}));
+        auto seq1 = slice(make_tuple(type<decltype(args)>{}...),
+                          make_range(0_c, int_<Size1::value - 1>{}));
 
-              return unpack(seq1, [x, y, sink, &args...](auto... xs) {
-                return sequence_impl<decltype(xs)...>::apply(x, y, sink,
-                                                             args...);
-              });
-            });
+        return unpack(seq1, [op1, op2, sink, &args...](auto... xs) {
+          return sequence_impl<decltype(xs)...>::apply(op1, op2, sink, args...);
+        });
+      });
 }
 }
 #endif

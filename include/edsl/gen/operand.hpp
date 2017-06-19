@@ -15,12 +15,6 @@ namespace edsl::gen {
 template <typename T>
 auto arguments_size();
 
-template <typename Functor>
-auto as_operand(Functor&&);
-
-template <typename Size, typename Functor>
-auto as_operand(Size, Functor&&);
-
 // template <typename T>
 // auto result_type_size() {
 //   using namespace boost::hana::literals;
@@ -41,34 +35,37 @@ struct operand : public T {
   static constexpr int size = S::value;
 
   template <typename Converter>
-  auto operator[](Converter conv) {
-    using namespace boost::hana;
-
-    auto s = boost::hana::size(meta::arguments<Converter>());
-    auto subject = *this;
-    return op(s, [subject, conv](auto sink, auto&&... args) {
-      auto seq = conv(std::forward<decltype(args)>(args)...);
-      if
-        constexpr(Foldable<decltype(seq)>::value) {
-          return unpack(seq, [subject, sink](auto... xs) {
-            return subject(sink, xs...);
-          });
-        }
-      else {
-        return subject(sink, seq);
-      }
-    });
-  }
+  auto operator[](Converter conv);
 };
 
-template <typename Functor>
-auto op(Functor&& f) {
-  return operand<std::decay_t<Functor>>{std::forward<Functor>(f)};
+template <typename T>
+auto make_operand(T t) {
+  return operand<T>{t};
 }
 
-template <typename Size, typename Functor>
-auto op(Size, Functor&& f) {
-  return operand<std::decay_t<Functor>, Size>{std::forward<Functor>(f)};
+template <typename Size, typename T>
+auto make_operand(Size, T t) {
+  return operand<T, Size>{t};
+}
+
+template <typename T, typename S>
+template <typename Converter>
+auto operand<T, S>::operator[](Converter conv) {
+  using namespace boost::hana;
+
+  auto s = boost::hana::size(meta::arguments<Converter>());
+  auto subject = *this;
+  return make_operand(s, [subject, conv](auto sink, auto&&... args) {
+    auto seq = conv(std::forward<decltype(args)>(args)...);
+    if
+      constexpr(Foldable<decltype(seq)>::value) {
+        return unpack(
+            seq, [subject, sink](auto... xs) { return subject(sink, xs...); });
+      }
+    else {
+      return subject(sink, seq);
+    }
+  });
 }
 
 template <typename T>

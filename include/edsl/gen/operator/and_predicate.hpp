@@ -3,16 +3,18 @@
 
 #include <utility>
 
-#include "edsl/gen/operand.hpp"
+#include "edsl/gen/as_operand.hpp"
 
 namespace edsl::gen {
 
-template <typename T, typename Size>
-auto operator&(operand<T, Size> subject) {
-  return op(boost::hana::int_<Size::value + 1>{},
-            [subject](auto /*sink*/, auto const&... args) {
-              return invoke(subject, args...);
-            });
+template <typename Subject,
+          typename = decltype(as_operand(std::declval<Subject&&>()))>
+auto operator&(Subject subject) {
+  auto op = as_operand(subject);
+  using Size = decltype(arguments_size<decltype(op)>());
+  return make_operand(
+      boost::hana::int_<Size::value + 1>{},
+      [op](auto /*sink*/, auto const&... args) { return invoke(op, args...); });
 }
 }
 
