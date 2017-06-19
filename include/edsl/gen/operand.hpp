@@ -16,10 +16,10 @@ template <typename T>
 auto arguments_size();
 
 template <typename Functor>
-auto op(Functor&&);
+auto as_operand(Functor&&);
 
 template <typename Size, typename Functor>
-auto op(Size, Functor&&);
+auto as_operand(Size, Functor&&);
 
 // template <typename T>
 // auto result_type_size() {

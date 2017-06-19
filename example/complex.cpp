@@ -8,14 +8,14 @@
 
 #include <boost/hana.hpp>
 
-using edsl::gen::op;
+using edsl::gen::as_operand;
 
-auto double_ = op([](std::ostream& out, double v) { out << v; });
+auto double_ = [](std::ostream& out, double v) { out << v; };
 
-auto true_ = op([](bool v) { return v == true; });
+auto true_ = as_operand([](bool v) { return v == true; });
 
-auto lit(char ch) {
-  return op([=](std::ostream& out) { out << ch; });
+auto as_operand(char ch) {
+  return as_operand([=](std::ostream& out) { out << ch; });
 }
 
 int main() {
@@ -24,9 +24,9 @@ int main() {
   };
   auto real = [](std::complex<double> const& c) { return c.real(); };
 
-  auto g = (&true_ << lit('(') << double_ << lit(',') << double_
-                   << lit(')'))[check_real_imag] |
-           double_[real];
+  auto g =
+      (&true_ << '(' << double_ << ',' << double_ << ')')[check_real_imag] |
+      double_[real];
 
   std::complex<double> c{1, 2};
   g(std::ref(std::cout), c);

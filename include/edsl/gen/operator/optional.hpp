@@ -7,13 +7,19 @@ namespace edsl::gen {
 
 template <typename T, typename Size>
 auto operator-(operand<T, Size> subject) {
-  return op(Size{}, [subject](auto sink, auto const& arg) {
-    if (arg) {
-      return invoke(subject, sink, arg);
-    } else {
-      return true;
+  if
+    constexpr(Size::value == 0) {
+      return op(Size{}, [subject](auto sink) { return invoke(subject, sink); });
     }
-  });
+  else {
+    return op(Size{}, [subject](auto sink, auto const& arg) {
+      if (arg) {
+        return invoke(subject, sink, arg);
+      } else {
+        return true;
+      }
+    });
+  }
 }
 }
 #endif
