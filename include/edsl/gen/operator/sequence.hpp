@@ -28,6 +28,7 @@ auto operator<<(Left left, Right right) {
   auto op2 = as_operand(right);
   using Size1 = decltype(arguments_size<decltype(op1)>());
   using Size2 = decltype(arguments_size<decltype(op2)>());
+
   return make_operand(
       boost::hana::int_<Size1::value + Size2::value - 1>{},
       [op1, op2](auto sink, auto const&... args) {

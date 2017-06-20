@@ -1,20 +1,26 @@
 #ifndef _599FD4B2_BB53_443B_A041_4A71754AE3AA_HPP
 #define _599FD4B2_BB53_443B_A041_4A71754AE3AA_HPP
 
-#include "edsl/gen/operand.hpp"
+#include <utility>
+
+#include "edsl/gen/as_operand.hpp"
 
 namespace edsl::gen {
 
-template <typename T, typename Size>
-auto operator-(operand<T, Size> subject) {
+template <typename Subject,
+          typename = decltype(as_operand(std::declval<Subject&&>()))>
+auto operator-(Subject subject) {
+  auto op = as_operand(subject);
+  using Size = decltype(arguments_size<decltype(op)>());
+
   if
-    constexpr(Size::value == 0) {
-      return op(Size{}, [subject](auto sink) { return invoke(subject, sink); });
+    constexpr(Size::value == 1) {
+      return make_operand(Size{}, [op](auto sink) { return invoke(op, sink); });
     }
   else {
-    return op(Size{}, [subject](auto sink, auto const& arg) {
+    return make_operand(Size{}, [op](auto sink, auto const& arg) {
       if (arg) {
-        return invoke(subject, sink, arg);
+        return invoke(op, sink, *arg);
       } else {
         return true;
       }

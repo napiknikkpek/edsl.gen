@@ -1,2 +1,5 @@
 add_executable(alternative alternative.cpp)
 add_executable(sequence sequence.cpp)
+add_executable(optional optional.cpp)
+add_executable(kleene kleene.cpp)
+add_executable(unary_plus unary_plus.cpp)

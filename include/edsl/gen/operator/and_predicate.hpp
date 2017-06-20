@@ -12,6 +12,7 @@ template <typename Subject,
 auto operator&(Subject subject) {
   auto op = as_operand(subject);
   using Size = decltype(arguments_size<decltype(op)>());
+
   return make_operand(
       boost::hana::int_<Size::value + 1>{},
       [op](auto /*sink*/, auto const&... args) { return invoke(op, args...); });
