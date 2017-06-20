@@ -12,7 +12,6 @@ set(CMAKE_EXE_LINKER_FLAGS -stdlib=libc++)
 
 include_directories(${Boost_INCLUDE_DIRS})
 
-
 add_library(edsl.gen INTERFACE)
 target_include_directories(edsl.gen INTERFACE include)
 

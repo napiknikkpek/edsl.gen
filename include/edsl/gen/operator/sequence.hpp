@@ -1,6 +1,7 @@
 #ifndef _C6BD5F07_BAA4_4987_B08E_319373B79739_HPP
 #define _C6BD5F07_BAA4_4987_B08E_319373B79739_HPP
 
+#include <type_traits>
 #include <utility>
 
 #include <boost/hana.hpp>
@@ -10,15 +11,23 @@
 
 namespace edsl::gen {
 
-template <typename... Args1>
-struct sequence_impl {
-  template <typename Op1, typename Op2, typename Sink, typename... Args2>
-  static constexpr auto apply(Op1 op1, Op2 op2, Sink sink,
-                              typename Args1::type const&... args1,
-                              Args2 const&... args2) {
+namespace {
+
+template <typename, typename>
+struct sequence_impl;
+
+using boost::hana::tuple;
+using boost::hana::basic_type;
+
+template <typename... Args1, typename... Args2>
+struct sequence_impl<tuple<basic_type<Args1>...>, tuple<basic_type<Args2>...>> {
+  template <typename Op1, typename Op2, typename Sink>
+  static auto apply(Op1 op1, Op2 op2, Sink sink, Args1 const&... args1,
+                    Args2 const&... args2) {
     return invoke(op1, sink, args1...) && invoke(op2, sink, args2...);
   }
 };
+}
 
 template <typename Left, typename Right,
           typename = decltype(as_operand(std::declval<Left&&>())),
@@ -35,12 +44,13 @@ auto operator<<(Left left, Right right) {
         using namespace boost::hana;
         using namespace boost::hana::literals;
 
-        auto seq1 = slice(make_tuple(type<decltype(args)>{}...),
-                          make_range(0_c, int_<Size1::value - 1>{}));
+        auto all = make_tuple(basic_type<std::decay_t<decltype(args)>>{}...);
+        auto pivot = int_<Size1::value - 1>{};
+        using Seq1 = decltype(slice(all, make_range(0_c, pivot)));
+        using Seq2 =
+            decltype(slice(all, make_range(pivot, int_<sizeof...(args)>{})));
 
-        return unpack(seq1, [op1, op2, sink, &args...](auto... xs) {
-          return sequence_impl<decltype(xs)...>::apply(op1, op2, sink, args...);
-        });
+        return sequence_impl<Seq1, Seq2>::apply(op1, op2, sink, args...);
       });
 }
 }

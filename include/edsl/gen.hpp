@@ -3,10 +3,10 @@
 
 #include "operand.hpp"
 #include "operator/alternative.hpp"
+#include "operator/and_predicate.hpp"
 #include "operator/kleene.hpp"
 #include "operator/not_predicate.hpp"
 #include "operator/optional.hpp"
-#include "operator/plus.hpp"
 #include "operator/sequence.hpp"
 #include "operator/unary_plus.hpp"
 
