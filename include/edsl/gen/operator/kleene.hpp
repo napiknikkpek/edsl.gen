@@ -4,6 +4,7 @@
 #include <boost/hana.hpp>
 
 #include "edsl/gen/as_operand.hpp"
+#include "edsl/gen/invoke.hpp"
 
 namespace edsl::gen {
 
@@ -13,19 +14,19 @@ auto operator*(Subject subject) {
   using namespace boost::hana::literals;
 
   auto op = as_operand(subject);
-  using Size = decltype(arguments_size<decltype(op)>());
+  using Size = decltype(operand_arguments_size<decltype(op)>());
 
   return make_operand(1_c, [op](auto sink, auto const& vec) {
     for (auto& e : vec) {
       if
-        constexpr(Size::value == 2) {
-          if (!invoke(op, sink, e)) return false;
+        constexpr(boost::hana::Foldable<std::decay_t<decltype(e)>>::value) {
+          if (!boost::hana::unpack(e, [op, sink](auto const&... xs) {
+                return invoke(op, sink, xs...);
+              }))
+            return false;
         }
       else {
-        if (!boost::hana::unpack(e, [op, sink](auto const&... xs) {
-              return invoke(op, sink, xs...);
-            }))
-          return false;
+        if (!invoke(op, sink, e)) return false;
       }
     }
     return true;

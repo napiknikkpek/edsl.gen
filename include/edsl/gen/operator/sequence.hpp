@@ -5,8 +5,8 @@
 
 #include <boost/hana.hpp>
 
-#include "edsl/gen/operand.hpp"
-#include "meta/type_traits.hpp"
+#include "edsl/gen/as_operand.hpp"
+#include "edsl/gen/invoke.hpp"
 
 namespace edsl::gen {
 
@@ -26,8 +26,8 @@ template <typename Left, typename Right,
 auto operator<<(Left left, Right right) {
   auto op1 = as_operand(left);
   auto op2 = as_operand(right);
-  using Size1 = decltype(arguments_size<decltype(op1)>());
-  using Size2 = decltype(arguments_size<decltype(op2)>());
+  using Size1 = decltype(operand_arguments_size<decltype(op1)>());
+  using Size2 = decltype(operand_arguments_size<decltype(op2)>());
 
   return make_operand(
       boost::hana::int_<Size1::value + Size2::value - 1>{},

@@ -6,7 +6,7 @@
 
 #include <boost/hana/type.hpp>
 
-namespace meta {
+namespace edsl::gen {
 
 namespace {
 template <typename T>

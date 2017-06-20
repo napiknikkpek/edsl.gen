@@ -4,6 +4,7 @@
 #include <utility>
 
 #include "edsl/gen/as_operand.hpp"
+#include "edsl/gen/invoke.hpp"
 
 namespace edsl::gen {
 
@@ -11,7 +12,7 @@ template <typename Subject,
           typename = decltype(as_operand(std::declval<Subject&&>()))>
 auto operator!(Subject subject) {
   auto op = as_operand(subject);
-  auto size = arguments_size<decltype(op)>();
+  auto size = operand_arguments_size<decltype(op)>();
   return make_operand(size, [op](auto sink, auto const&... args) {
     return !invoke(op, sink, args...);
   });

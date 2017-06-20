@@ -11,18 +11,16 @@ template <typename Subject,
           typename = decltype(as_operand(std::declval<Subject&&>()))>
 auto operator-(Subject subject) {
   auto op = as_operand(subject);
-  using Size = decltype(arguments_size<decltype(op)>());
+  using Size = decltype(operand_arguments_size<decltype(op)>());
 
   if
     constexpr(Size::value == 1) {
-      return make_operand(Size{}, [op](auto sink) { return invoke(op, sink); });
+      return make_operand(Size{}, [op](auto sink) { return op(sink); });
     }
   else {
     return make_operand(Size{}, [op](auto sink, auto const& arg) {
       if (arg) {
-        return invoke(op, sink, *arg);
-      } else {
-        return true;
+        return op(sink, *arg);
       }
     });
   }

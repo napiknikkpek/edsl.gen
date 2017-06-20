@@ -4,6 +4,7 @@
 #include <utility>
 
 #include "edsl/gen/as_operand.hpp"
+#include "edsl/gen/invoke.hpp"
 
 namespace edsl::gen {
 
@@ -13,7 +14,7 @@ template <typename Left, typename Right,
 auto operator|(Left left, Right right) {
   auto op1 = as_operand(left);
   auto op2 = as_operand(right);
-  auto size = arguments_size<decltype(op1)>();
+  auto size = operand_arguments_size<decltype(op1)>();
   return make_operand(size, [op1, op2](auto sink, auto const&... args) {
     return invoke(op1, sink, args...) || invoke(op2, sink, args...);
   });

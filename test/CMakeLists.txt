@@ -1,5 +1,7 @@
-add_executable(alternative alternative.cpp)
-add_executable(sequence sequence.cpp)
-add_executable(optional optional.cpp)
-add_executable(kleene kleene.cpp)
-add_executable(unary_plus unary_plus.cpp)
+file(GLOB_RECURSE UNIT_TESTS "*.cpp")
+
+foreach(file_ IN LISTS UNIT_TESTS)
+  get_filename_component(target ${file_} NAME_WE)
+  add_executable(${target} ${file_})
+  add_test(NAME ${target} COMMAND $<TARGET_FILE:${target}>)
+endforeach()
